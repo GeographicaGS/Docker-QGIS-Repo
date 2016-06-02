@@ -1,0 +1,18 @@
+---
+# Installs QGIS from repos
+
+- name: Add apt-key
+  apt_key: keyserver=keyserver.ubuntu.com id=3FF5FFCAD71472C4
+
+- name: Add repository
+  apt_repository: repo='deb http://qgis.org/debian trusty main' state=present
+
+- name: Add source repository
+  apt_repository: repo='deb-src http://qgis.org/debian trusty main' state=present  
+  
+- name: Update APT
+  apt: update_cache=yes cache_valid_time=0
+
+- name: Install packages
+  apt: state=installed pkg={{ item }}
+  with_items: "{{ packages }}"

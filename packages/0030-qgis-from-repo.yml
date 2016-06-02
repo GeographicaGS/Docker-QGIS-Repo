@@ -1,0 +1,4 @@
+---
+- hosts: localhost
+  roles:
+    - 00140-qgis_from_repos

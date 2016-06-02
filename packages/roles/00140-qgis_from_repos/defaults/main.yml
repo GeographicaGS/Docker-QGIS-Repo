@@ -1,0 +1,9 @@
+---
+# Default variables for installing QGIS from repositories
+
+# apt-packages to install
+packages:
+ - qgis
+ - python-qgis
+ - qgis-plugin-grass
+ 
