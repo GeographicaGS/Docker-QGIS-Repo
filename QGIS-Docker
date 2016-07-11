@@ -1,0 +1,156 @@
+#!/bin/bash
+
+# Launches a Docker qgis-repo tag in interactive mode
+
+# Usage text
+
+usage()
+{
+cat << EOF
+usage: $0 options
+
+Launches a Docker qgis-repo in interactive mode.
+Must be run as superuser with environment:
+
+   sudo -E QGIS-Docker
+
+OPTIONS:
+   -h                         This help.
+   -n [name]                  A name. If a container with the same name is present,
+                              it will restart it. If not, it will be created.
+                              If not present, an interactive, --rm container 
+                              will be created.
+   -t [version tag]           Launches a certain QGIS version tag.
+                              If not present, 'latest' will be issued.
+   -v [folder]:[name]         Mounts local folders. Multiple volumes can be issued.
+                              /home/$USER:/home is mounted by default.
+   -l [container name]:[id]   Links to that container assigning the given ID to it.
+                              Multiple links can be issued.
+
+Environmental variables:
+
+QGISDOCKERVOLUMES             A Bash containing volumes to be mounted by default, separated by ';',
+                              for example:
+
+                                QGISDOCKERVOLUMES='/home/git:/git;/whatever:/whatever'
+
+                              Consider using visudo's env_keep to transfer this variable to sudo.
+
+EOF
+}
+
+
+# Variables
+
+NAME=
+VERSION=
+LINKS=()
+VOLUMES=()
+
+
+# Command line parsing
+
+while getopts "hn:t:l:v:" OPTION
+do
+    case $OPTION in
+	h)
+	    usage
+	    exit 1
+	    ;;
+	n)
+	    NAME=$OPTARG
+	    ;;
+	t)
+	    VERSION=$OPTARG
+	    ;;
+	v)
+	    VOLUMES+=("$OPTARG")
+	    ;;
+	l)
+	    LINKS+=("$OPTARG")
+	    ;;
+	?)
+	usage
+	exit
+	;;
+    esac
+done
+
+
+# Check for empty version
+
+if [ -z "$VERSION" ] ; then
+  VERSION="latest"
+fi
+
+
+# Command parsing
+
+C="docker "
+
+
+# Check for empty name for issuing an --rm -ti container
+
+if [ -z "$NAME" ] ; then
+    C+="run --rm -ti "
+else
+    # Check for existing container
+    DOCKERID=`docker ps -a -q -f name=${NAME}`
+    
+    if [ $DOCKERID ] ; then
+	C+="start ${NAME} "
+	
+	xhost + &> /dev/null
+
+	eval $C
+	
+	xhost - &> /dev/null
+
+	exit 0
+    else
+	C+="run -d --name ${NAME} "
+    fi
+fi
+
+
+# Volumes
+
+if [ "${#VOLUMES[@]}" -gt "0" ] ; then
+    for ((i=0;i<=((${#VOLUMES[@]}-1));i++))
+    do
+	C+="-v ${VOLUMES[i]} "
+    done;
+fi
+
+
+# Default volumes
+
+if [ ! -z "$QGISDOCKERVOLUMES" ] ; then
+    IFS=';' read -ra VOLS <<< $QGISDOCKERVOLUMES
+
+    for i in "${VOLS[@]}"
+    do
+	C+="-v $i "
+    done;
+fi
+
+
+# Links
+
+if [ "${#LINKS[@]}" -gt "0" ] ; then
+    for ((i=0;i<=((${#LINKS[@]}-1));i++))
+    do
+	C+="--link ${LINKS[i]} "
+    done;
+fi
+
+C+='-e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix '
+C+="-v /home/$SUDO_USER:/home geographica/qgis-repo:${VERSION}"
+
+# Launch 
+
+xhost + &> /dev/null
+
+eval $C
+
+xhost - &> /dev/null

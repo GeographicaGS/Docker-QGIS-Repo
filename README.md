@@ -19,6 +19,14 @@ xhost -
 
 Please note that any host folder mounted as a volume in the container should be linked to __/home/__. The container will map any user and group UID this folder has to a container user and launch QGIS with that user to avoid permission issues.
 
+## Launch Script
+
+There is a launch script called __QGIS-Docker__ that greatly eases both quick launches and complex configurations. Check usage with:
+
+```Shell
+QGIS-Docker -h
+```
+
 ## Not Done!
 
 Some issues remain pending:
