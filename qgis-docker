@@ -12,7 +12,7 @@ usage: $0 options
 Launches a Docker qgis-repo in interactive mode.
 Must be run as superuser with environment:
 
-   sudo -E QGIS-Docker
+   sudo -E qgis-docker
 
 OPTIONS:
    -h                         This help.
@@ -50,7 +50,7 @@ VOLUMES=()
 
 # Command line parsing
 
-while getopts "hn:t:l:v:" OPTION
+while getopts ":hn:t:l:v:" OPTION
 do
     case $OPTION in
 	h)
