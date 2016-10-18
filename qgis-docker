@@ -25,7 +25,8 @@ OPTIONS:
    -v [folder]:[name]         Mounts local folders. Multiple volumes can be issued.
                               /home/$USER:/home is mounted by default.
    -l [container name]:[id]   Links to that container assigning the given ID to it.
-                              Multiple links can be issued.
+                              Multiple links can be issued. Volumes from linked containers
+                              are also added.
 
 Environmental variables:
 
@@ -140,7 +141,7 @@ fi
 if [ "${#LINKS[@]}" -gt "0" ] ; then
     for ((i=0;i<=((${#LINKS[@]}-1));i++))
     do
-	C+="--link ${LINKS[i]} "
+	C+="--link ${LINKS[i]} --volumes-from ${LINKS[i]} "
     done;
 fi
 
