@@ -141,7 +141,9 @@ fi
 if [ "${#LINKS[@]}" -gt "0" ] ; then
     for ((i=0;i<=((${#LINKS[@]}-1));i++))
     do
-	C+="--link ${LINKS[i]} --volumes-from ${LINKS[i]} "
+	# Only the container name is needed to link volumes, strip the alias
+	IFS=':'; CONNAME=($LINKS[i]); unset IFS;
+	C+="--link ${LINKS[i]} --volumes-from ${CONNAME[0]} "
     done;
 fi
 
